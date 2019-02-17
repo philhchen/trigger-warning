@@ -98,23 +98,23 @@ def buildModel(model_type='CNN', dropout=0.2):
     tweet_input = Input(shape=(MAX_SEQUENCE_LENGTH,), dtype='int32')
     embedded = embedding_layer(tweet_input)
     if model_type == 'CNN' or model_type == 'combined':
-        bigram_branch = Conv1D(filters=32, kernel_size=2, activation='relu')(embedded)
+        bigram_branch = Conv1D(filters=32, kernel_size=2, activation='relu', use_bias=False)(embedded)
         bigram_branch = GlobalMaxPooling1D()(bigram_branch)
-        trigram_branch = Conv1D(filters=32, kernel_size=3, activation='relu')(embedded)
+        trigram_branch = Conv1D(filters=32, kernel_size=3, activation='relu', use_bias=False)(embedded)
         trigram_branch = GlobalMaxPooling1D()(trigram_branch)
-        fourgram_branch = Conv1D(filters=32, kernel_size=4, activation='relu')(embedded)
+        fourgram_branch = Conv1D(filters=32, kernel_size=4, activation='relu', use_bias=False)(embedded)
         fourgram_branch = GlobalMaxPooling1D()(fourgram_branch)
         if model_type == 'CNN':
             merged = concatenate([bigram_branch, trigram_branch, fourgram_branch], axis=1)
         else:
             if GPU:
-                lstm = Bidirectional(CuDNNLSTM(32, activation='relu'))(embedded)
+                lstm = Bidirectional(CuDNNLSTM(32))(embedded)
             else:
                 lstm = Bidirectional(LSTM(32, activation='relu'))(embedded)
             merged = concatenate([bigram_branch, trigram_branch, fourgram_branch, lstm], axis=1)
     elif model_type == 'RNN':
         if GPU:
-            merged = Bidirectional(CuDNNLSTM(32, activation='relu'))(embedded)
+            merged = Bidirectional(CuDNNLSTM(32))(embedded)
         else:
             merged = Bidirectional(LSTM(32, activation='relu'))(embedded)
         
