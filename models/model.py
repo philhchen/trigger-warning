@@ -9,8 +9,11 @@ MAX_WORDS = 1000000
 MAX_SEQUENCE_LENGTH = 20
 TEST_SPLIT = 0.4
 EMBEDDING_DIM = 50
-MODEL_DIR = '/Users/Phil/Documents/trigger-warning/'
-GLOVE_DIR = '/Users/Phil/Downloads/glove'
+# MODEL_DIR = '/Users/Phil/Documents/trigger-warning/'
+# GLOVE_DIR = '/Users/Phil/Downloads/glove'
+MODEL_DIR = '/scratch/users/philhc/trigger-warning'
+GLOVE_DIR = '/scratch/users/philhc/glove'
+
 
 tokenizer = Tokenizer(num_words=MAX_WORDS)
 
@@ -35,7 +38,6 @@ def preprocessing(filename, isJson=True):
             scores.append(int(words[0]))
             text.append(words[1:])
     scores = np.asarray(scores)
-    scores = (1+scores)/2
 
     # Use tokenizer to pad sequences and split into train, val, test
     tokenizer.fit_on_texts(text)
