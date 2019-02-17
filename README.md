@@ -31,4 +31,3 @@ For example, **James Damore's letter**, which sparked intense backlash, was writ
 more naive systems. The LSTM components of the model tend to convey an overall "context" to the final layers of the neural network,
 whereas the CNN components tend to identify phrases that are strongly linked to controversy.
 
-## Impact ##
