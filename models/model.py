@@ -133,7 +133,7 @@ history = model.fit(x_train, y_train, epochs=5, batch_size=32, validation_split=
 tfjs.converters.save_keras_model(model, MODEL_DIR)
 model.save('model.h5')
 
-model.load_weights('model.h5')
+# model.load_weights('model.h5')
 prediction = model.predict(x_test, batch_size=32)
 print('Mean absolute error:', np.mean(np.abs(prediction - y_test)))
 
