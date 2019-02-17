@@ -89,10 +89,12 @@ with open(os.path.join(MODEL_DIR, 'models/tokenizer.json'),'w') as f:
     json.dump(tokenizer.word_index, f)
 
 from keras.models import Model
-from keras.layers import Input, Dense, LSTM, Bidirectional, Dropout
+from keras.layers import Input, Dense, LSTM, CuDNNLSTM, Bidirectional, Dropout
 from keras.layers import GlobalMaxPooling1D, Conv1D, concatenate
 
 def buildModel(model_type='CNN', dropout=0.2):
+    GPU = True
+
     tweet_input = Input(shape=(MAX_SEQUENCE_LENGTH,), dtype='int32')
     embedded = embedding_layer(tweet_input)
     if model_type == 'CNN' or model_type == 'combined':
@@ -105,10 +107,16 @@ def buildModel(model_type='CNN', dropout=0.2):
         if model_type == 'CNN':
             merged = concatenate([bigram_branch, trigram_branch, fourgram_branch], axis=1)
         else:
-            lstm = Bidirectional(LSTM(32, activation='relu'))(embedded)
+            if GPU:
+                lstm = Bidirectional(CuDNNLSTM(32, activation='relu'))(embedded)
+            else:
+                lstm = Bidirectional(LSTM(32, activation='relu'))(embedded)
             merged = concatenate([bigram_branch, trigram_branch, fourgram_branch, lstm], axis=1)
     elif model_type == 'RNN':
-        merged = Bidirectional(LSTM(64, activation='relu'))(embedded)
+        if GPU:
+            merged = Bidirectional(CuDNNLSTM(32, activation='relu'))(embedded)
+        else:
+            merged = Bidirectional(LSTM(32, activation='relu'))(embedded)
         
     hidden = Dense(32, activation='relu')(merged)
     hidden = Dropout(dropout)(hidden)
