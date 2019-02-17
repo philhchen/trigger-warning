@@ -6,11 +6,13 @@ import os
 import json
 
 MAX_WORDS = 1000000
-MAX_SEQUENCE_LENGTH = 30
+MAX_SEQUENCE_LENGTH = 20
 TEST_SPLIT = 0.4
 EMBEDDING_DIM = 50
-MODEL_DIR = '/Users/Phil/Documents/Treehacks/'
+MODEL_DIR = '/Users/Phil/Documents/trigger-warning/'
 GLOVE_DIR = '/Users/Phil/Downloads/glove'
+
+tokenizer = Tokenizer(num_words=MAX_WORDS)
 
 def preprocessing(filename, isJson=True):
     # Preprocess data into train and test tensors
@@ -36,7 +38,6 @@ def preprocessing(filename, isJson=True):
     scores = (1+scores)/2
 
     # Use tokenizer to pad sequences and split into train, val, test
-    tokenizer = Tokenizer(num_words=MAX_WORDS)
     tokenizer.fit_on_texts(text)
     sequences = tokenizer.texts_to_sequences(text)
 
@@ -80,26 +81,54 @@ def preprocessing(filename, isJson=True):
 
     return (x_train, y_train, x_test, y_test, embedding_layer)
 
-# Run preprocessing
-filename = os.path.join(MODEL_DIR, 'data1.json')
+filename = os.path.join(MODEL_DIR, 'data/combined_sentiments.json')
 x_train, y_train, x_test, y_test, embedding_layer = preprocessing(filename)
+with open(os.path.join(MODEL_DIR, 'models/tokenizer.json'),'w') as f:
+    json.dump(tokenizer.word_index, f)
 
-# Build Model
-from keras.models import Sequential
-from keras.layers import Dense, LSTM, Bidirectional
+from keras.models import Model
+from keras.layers import Input, Dense, LSTM, Bidirectional, Dropout
+from keras.layers import GlobalMaxPooling1D, Conv1D, concatenate
 
-model = Sequential()
-model.add(embedding_layer)
-model.add(Bidirectional(LSTM(32)))
-model.add(Dense(1, activation='sigmoid'))
+def buildModel(model_type='CNN', dropout=0.2):
+    tweet_input = Input(shape=(MAX_SEQUENCE_LENGTH,), dtype='int32')
+    embedded = embedding_layer(tweet_input)
+    if model_type == 'CNN' or model_type == 'combined':
+        bigram_branch = Conv1D(filters=32, kernel_size=2, activation='relu')(embedded)
+        bigram_branch = GlobalMaxPooling1D()(bigram_branch)
+        trigram_branch = Conv1D(filters=32, kernel_size=3, activation='relu')(embedded)
+        trigram_branch = GlobalMaxPooling1D()(trigram_branch)
+        fourgram_branch = Conv1D(filters=32, kernel_size=4, activation='relu')(embedded)
+        fourgram_branch = GlobalMaxPooling1D()(fourgram_branch)
+        if model_type == 'CNN':
+            merged = concatenate([bigram_branch, trigram_branch, fourgram_branch], axis=1)
+        else:
+            lstm = Bidirectional(LSTM(32, activation='relu'))(embedded)
+            merged = concatenate([bigram_branch, trigram_branch, fourgram_branch, lstm], axis=1)
+    elif model_type == 'RNN':
+        merged = Bidirectional(LSTM(64, activation='relu'))(embedded)
+        
+    hidden = Dense(32, activation='relu')(merged)
+    hidden = Dropout(dropout)(hidden)
+    output = Dense(1, activation='relu')(hidden)
+    model = Model(inputs=[tweet_input], outputs=[output])
+    model.summary()
+    return model
 
+model = buildModel(model_type='combined')
 model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['mae'])
 
-# Train model
 import tensorflowjs as tfjs
-history = model.fit(x_train, y_train, epochs=1, batch_size=32, validation_split=0.2)
+history = model.fit(x_train, y_train, epochs=5, batch_size=32, validation_split=0.2)
 tfjs.converters.save_keras_model(model, MODEL_DIR)
+model.save('model.h5')
 
-# Test model
-prediction = model.predict(x_test)
-print(np.mean(np.abs(prediction - y_test)))
+model.load_weights('model.h5')
+prediction = model.predict(x_test, batch_size=32)
+print('Mean absolute error:', np.mean(np.abs(prediction - y_test)))
+
+test = ['stupid kavanaugh and brexit what is wrong with these brits', 'what about some positivity hereee']
+sequences = tokenizer.texts_to_sequences(test)
+data = pad_sequences(sequences, maxlen=MAX_SEQUENCE_LENGTH)
+prediction = model.predict(data)
+print(prediction)
