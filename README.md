@@ -1,5 +1,5 @@
 # Trigger Warning #
-Ever accidentally offended someone? Here's a self-updating NLP-based system to identify (and discourage) inflammatory content.
+Ever accidentally offended someone or been unintentionally offended? Here's a self-updating NLP-based system to identify (and discourage) inflammatory content.
 
 ## Overview ##
 There are three components to this project:
