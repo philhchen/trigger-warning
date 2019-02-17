@@ -4,12 +4,12 @@ import bz2
 import collections
 from langdetect import detect
 
-from google.cloud import language
-from google.cloud.language import enums
-from google.cloud.language import types
+# from google.cloud import language
+# from google.cloud.language import enums
+# from google.cloud.language import types
 
 
-ROOT_DIR = os.getcwd()
+ROOT_DIR = '/scratch/users/philhc/par'
 DATA_DIR = os.path.join(ROOT_DIR, 'data')
 
 def construct_tweet_dict():
@@ -17,7 +17,7 @@ def construct_tweet_dict():
 
     #load
     last_file = ""
-    if (os.path.isfile('./saved_tweet_dict.json')):
+    if (os.path.isfile('saved_tweet_dict.json')):
         with open('saved_tweet_dict.json') as infile:
             saved_params = json.loads(infile.read())
             tweet_dict = saved_params["tweet_dict"]
@@ -31,26 +31,29 @@ def construct_tweet_dict():
             if (filepath <= last_file):
                 continue
             source = bz2.BZ2File(filepath)
-            for line in source:
-                tweet = json.loads(line)
-                if not ("text" in tweet and "quoted_status" in tweet):
-                    continue
-                try:
-                    lang = detect(tweet["text"])
-                    if not (detect(tweet["text"]) == "en"):
+            try:
+                for line in source:
+                    tweet = json.loads(line)
+                    if not ("text" in tweet and "quoted_status" in tweet):
                         continue
-                    parent_id = tweet["quoted_status"]["id_str"]
-                    if not (parent_id in tweet_dict):
-                        fields = {}
-                        fields["num_comments"] = 0
-                        fields["num_followers"] = tweet["quoted_status"]["user"]["followers_count"]
-                        fields["text"] = tweet["quoted_status"]["text"]
-                        fields["comments"] = ""
-                        tweet_dict[parent_id] = fields
-                    tweet_dict[parent_id]["comments"] += tweet["text"]
-                    tweet_dict[parent_id]["num_comments"] += 1
-                except:
-                    pass
+                    try:
+                        lang = detect(tweet["text"])
+                        if not (detect(tweet["text"]) == "en"):
+                            continue
+                        parent_id = tweet["quoted_status"]["id_str"]
+                        if not (parent_id in tweet_dict):
+                            fields = {}
+                            fields["num_comments"] = 0
+                            fields["num_followers"] = tweet["quoted_status"]["user"]["followers_count"]
+                            fields["text"] = tweet["quoted_status"]["text"]
+                            fields["comments"] = ""
+                            tweet_dict[parent_id] = fields
+                        tweet_dict[parent_id]["comments"] += tweet["text"]
+                        tweet_dict[parent_id]["num_comments"] += 1
+                    except:
+                        pass
+            except:
+                pass
 
             # save after every file
             with open('saved_tweet_dict.json', 'w') as outfile:
@@ -117,3 +120,5 @@ def analyze_tweets():
 
     with open('sentiments.json', 'w') as outfile:
         json.dump(sentiment_dict, outfile)
+
+construct_tweet_dict()
