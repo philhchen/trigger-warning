@@ -11,7 +11,7 @@ and scores each Tweet based on the "consensus sentiment" among its replies and q
 The second is a **hybrid RNN/CNN-based model** that predicts how likely a post is to elicit a negative response. 
 We use the data processing pipeline to train the model.
 
-The third is a **Chrome extension** that uses the model created in the second cThisomponent to recommend users to reconsider 
+The third is a **Chrome extension** that uses the model created in the second component to recommend users to reconsider 
 their comments or posts if the model detects a very inflammatory post.
 
 ## Why ##
