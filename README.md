@@ -11,7 +11,7 @@ and scores each Tweet based on the "consensus sentiment" among its replies and q
 The second is a **hybrid RNN/CNN-based model** that predicts how likely a post is to elicit a negative response. 
 We use the data processing pipeline to train the model.
 
-The third is a **Chrome extension** that uses the model created in the second cThisomponent to recommend users to reconsider 
+The third is a **Chrome extension** that uses the model created in the second component to recommend users to reconsider 
 their comments or posts if the model detects a very inflammatory post.
 
 ## Why ##
@@ -31,4 +31,3 @@ For example, **James Damore's letter**, which sparked intense backlash, was writ
 more naive systems. The LSTM components of the model tend to convey an overall "context" to the final layers of the neural network,
 whereas the CNN components tend to identify phrases that are strongly linked to controversy.
 
-## Impact ##
