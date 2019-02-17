@@ -81,7 +81,7 @@ def preprocessing(filename, isJson=True):
     return (x_train, y_train, x_test, y_test, embedding_layer)
 
 # Run preprocessing
-filename = os.path.join(MODEL_DIR, 'data.json')
+filename = os.path.join(MODEL_DIR, 'data1.json')
 x_train, y_train, x_test, y_test, embedding_layer = preprocessing(filename)
 
 # Build Model
