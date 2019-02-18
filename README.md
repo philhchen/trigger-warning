@@ -2,7 +2,7 @@
 Ever accidentally offended someone or been unintentionally offended? Here's a self-updating NLP-based system to identify (and discourage) inflammatory content.
 
 ## Overview ##
-![alt text](https://raw.githubusercontent.com/philhchen/trigger-warning/blob/master/imgs/Trigger%20Warning-2.png)
+![alt text](https://github.com/philhchen/trigger-warning/blob/master/imgs/Trigger%20Warning-2.png)
 There are three components to this project:
 
 The first is a **data processing pipeline** that downloads Tweets from the online database of Tweets, 
